@@ -34,7 +34,7 @@ jobs:
         run: python -m simulator.generate
 
       - name: Initialize empty streaming Parquet schema
-        run: python -c "from streaming.consumer import ensure_streaming_storage; ensure_streaming_storage()"
+        run: python scripts/create_ci_stream_fixture.py
 
       - name: Verify DuckDB connection
         working-directory: analytics_dbt

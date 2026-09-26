@@ -38,7 +38,7 @@ jobs:
         run: python -m simulator.generate
 
       - name: Initialize empty streaming Parquet schema
-        run: python -c "from streaming.consumer import ensure_streaming_storage; ensure_streaming_storage()"
+        run: python scripts/create_ci_stream_fixture.py
 
       - name: Build dbt models required by Python tests
         working-directory: analytics_dbt
