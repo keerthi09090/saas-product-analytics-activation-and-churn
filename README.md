@@ -11,6 +11,7 @@ The project uses a reproducible, behavior-driven **synthetic dataset** so the
 entire system can be demonstrated publicly without customer data. It is a
 portfolio implementation, not a production deployment at a real company.
 
+[Live Demo](https://saas-analytics-churn-demo.streamlit.app/) ·
 [Architecture](#architecture) · [Screenshots](#project-screenshots) ·
 [Run locally](#running-locally) · [5-minute demo](docs/demo.md) ·
 [Model card](docs/model_card.md) ·
