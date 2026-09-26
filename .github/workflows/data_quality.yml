@@ -1,0 +1,54 @@
+name: Data Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  dbt-and-contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Generate deterministic SaaS data
+        run: python -m simulator.generate
+
+      - name: Verify DuckDB connection
+        working-directory: analytics_dbt
+        run: dbt debug --profiles-dir .
+
+      - name: Build analytics models
+        working-directory: analytics_dbt
+        run: dbt run --profiles-dir .
+
+      - name: Run dbt data tests
+        working-directory: analytics_dbt
+        run: dbt test --profiles-dir .
+
+      - name: Run data contracts and pipeline tests
+        run: >-
+          python -m pytest
+          tests/test_generator.py
+          tests/test_streaming.py
+          tests/test_batch_pipeline.py
+          tests/test_airflow_dags.py

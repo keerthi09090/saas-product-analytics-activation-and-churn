@@ -1,0 +1,28 @@
+name: "saas_product_analytics"
+version: "1.0.0"
+config-version: 2
+
+profile: "saas_product_analytics"
+
+flags:
+  send_anonymous_usage_stats: false
+
+model-paths: ["models"]
+test-paths: ["tests"]
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+# Commands are run from analytics_dbt/, so the raw Parquet directory is one
+# level above this project. Override this variable for another data location.
+vars:
+  raw_data_path: "../data"
+
+models:
+  saas_product_analytics:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+    marts:
+      +materialized: table

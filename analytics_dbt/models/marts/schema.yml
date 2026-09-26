@@ -1,0 +1,234 @@
+version: 2
+
+models:
+  - name: dim_account
+    description: One row per SaaS customer account with current subscription attributes.
+    columns:
+      - name: account_id
+        data_tests:
+          - unique
+          - not_null
+      - name: plan
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Starter", "Growth", "Enterprise"]
+      - name: subscription_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["trial", "active", "cancelled"]
+
+  - name: dim_user
+    description: One row per product user.
+    columns:
+      - name: user_id
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_account')
+                field: account_id
+
+  - name: fact_product_events
+    description: Product event fact table at event grain.
+    columns:
+      - name: event_id
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_account')
+                field: account_id
+      - name: user_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_user')
+                field: user_id
+
+  - name: fact_subscriptions
+    description: Subscription fact table at subscription grain.
+    columns:
+      - name: subscription_id
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        data_tests:
+          - relationships:
+              arguments:
+                to: ref('dim_account')
+                field: account_id
+      - name: subscription_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["trial", "active", "cancelled"]
+
+  - name: mart_activation
+    description: Account activation outcome using the unchanged Level 2 definition.
+    columns:
+      - name: account_id
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_account')
+                field: account_id
+      - name: is_activated
+        data_tests:
+          - not_null
+
+  - name: mart_feature_adoption
+    description: Account adoption rate for each selected product feature.
+    columns:
+      - name: feature_name
+        data_tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - invite_sent
+                  - integration_connected
+                  - report_created
+                  - report_exported
+                  - dashboard_viewed
+      - name: adoption_rate
+        data_tests:
+          - not_null
+
+  - name: mart_account_activity
+    description: Account-level activity, seat utilization, and recency metrics.
+    columns:
+      - name: account_id
+        data_tests:
+          - unique
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_account')
+                field: account_id
+      - name: seat_utilization
+        data_tests:
+          - not_null
+      - name: events_last_7d
+        data_tests:
+          - not_null
+      - name: events_last_30d
+        data_tests:
+          - not_null
+
+  - name: mart_retention_cohorts
+    description: Weekly signup cohorts with meaningful-event retention by week.
+    columns:
+      - name: cohort_week
+        data_tests: [not_null]
+      - name: weeks_since_start
+        data_tests: [not_null]
+      - name: cohort_size
+        data_tests: [not_null]
+      - name: retained_accounts
+        data_tests: [not_null]
+      - name: retention_rate
+        data_tests: [not_null]
+
+  - name: mart_logo_churn
+    description: Monthly paid-account churn using the opening customer base.
+    columns:
+      - name: month
+        data_tests: [unique, not_null]
+      - name: starting_accounts
+        data_tests: [not_null]
+      - name: churned_accounts
+        data_tests: [not_null]
+      - name: logo_churn_rate
+        data_tests: [not_null]
+
+  - name: mart_revenue_churn
+    description: Monthly MRR lost when prior-month customers cancel.
+    columns:
+      - name: month
+        data_tests: [unique, not_null]
+      - name: starting_mrr
+        data_tests: [not_null]
+      - name: churned_mrr
+        data_tests: [not_null]
+      - name: revenue_churn_rate
+        data_tests: [not_null]
+
+  - name: mart_revenue_retention
+    description: Monthly NRR with churn, contraction, and expansion movements.
+    columns:
+      - name: month
+        data_tests: [unique, not_null]
+      - name: starting_mrr
+        data_tests: [not_null]
+      - name: churned_mrr
+        data_tests: [not_null]
+      - name: contraction_mrr
+        data_tests: [not_null]
+      - name: expansion_mrr
+        data_tests: [not_null]
+      - name: ending_mrr
+        data_tests: [not_null]
+      - name: nrr
+        data_tests: [not_null]
+
+  - name: mart_retention_segments
+    description: Observed paid-account retention by four customer dimensions.
+    columns:
+      - name: segment_type
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["plan", "engagement_level", "company_size", "acquisition_channel"]
+      - name: segment_value
+        data_tests: [not_null]
+      - name: total_accounts
+        data_tests: [not_null]
+      - name: retention_rate
+        data_tests: [not_null]
+
+  - name: mart_retention_behavior
+    description: Descriptive retained-versus-churned behavior comparison.
+    columns:
+      - name: retention_status
+        data_tests:
+          - unique
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["retained", "churned"]
+      - name: total_accounts
+        data_tests: [not_null]
+
+  - name: mart_churn_features
+    description: Leakage-safe monthly paid-account snapshots for 30-day churn prediction.
+    columns:
+      - name: account_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_account')
+                field: account_id
+      - name: prediction_date
+        data_tests: [not_null]
+      - name: churn_label
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [0, 1]
+      - name: seat_utilization
+        data_tests: [not_null]

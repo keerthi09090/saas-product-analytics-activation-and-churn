@@ -1,0 +1,140 @@
+version: 2
+
+models:
+  - name: stg_accounts
+    description: Typed account records read directly from accounts.parquet.
+    columns:
+      - name: account_id
+        data_tests:
+          - unique
+          - not_null
+      - name: plan
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Starter", "Growth", "Enterprise"]
+      - name: engagement_level
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["low", "medium", "high"]
+
+  - name: stg_users
+    description: Typed product users read directly from users.parquet.
+    columns:
+      - name: user_id
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: role
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Admin", "Manager", "Analyst", "Member"]
+
+  - name: stg_subscriptions
+    description: Typed subscription records read directly from subscriptions.parquet.
+    columns:
+      - name: subscription_id
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: plan
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["Starter", "Growth", "Enterprise"]
+      - name: subscription_status
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["trial", "active", "cancelled"]
+
+  - name: stg_invoices
+    description: Typed invoice records read directly from invoices.parquet.
+    columns:
+      - name: invoice_id
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: subscription_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_subscriptions')
+                field: subscription_id
+      - name: plan
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ["Starter", "Growth", "Enterprise"]
+      - name: payment_status
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["paid", "failed", "pending"]
+
+  - name: stg_events
+    description: Typed, event_id-deduplicated product events from batch and Kafka Parquet inputs.
+    columns:
+      - name: event_id
+        data_tests:
+          - unique
+          - not_null
+      - name: account_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_accounts')
+                field: account_id
+      - name: user_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('stg_users')
+                field: user_id
+      - name: event_name
+        data_tests:
+          - accepted_values:
+              arguments:
+                values:
+                  - workspace_created
+                  - invite_sent
+                  - integration_connected
+                  - report_created
+                  - report_exported
+                  - dashboard_viewed
+                  - user_login
+      - name: event_version
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: [1, 2]

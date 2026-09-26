@@ -1,0 +1,16 @@
+[tool.ruff]
+target-version = "py39"
+line-length = 88
+exclude = [
+  ".git",
+  ".venv",
+  ".pytest_cache",
+  ".ruff_cache",
+  "airflow/logs",
+  "analytics_dbt/logs",
+  "analytics_dbt/target",
+  "mlruns",
+]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]

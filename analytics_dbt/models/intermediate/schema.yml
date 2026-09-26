@@ -1,0 +1,19 @@
+version: 2
+
+models:
+  - name: int_account_monthly_revenue
+    description: Contracted MRR at one row per paid account and billing month.
+    columns:
+      - name: account_id
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_account')
+                field: account_id
+      - name: month
+        data_tests:
+          - not_null
+      - name: monthly_revenue
+        data_tests:
+          - not_null

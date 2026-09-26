@@ -1,0 +1,10 @@
+saas_product_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "analytics.duckdb"
+      schema: main
+      threads: 4
+      settings:
+        TimeZone: UTC

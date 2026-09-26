@@ -1,0 +1,9 @@
+.venv
+.git
+.pytest_cache
+__pycache__
+analytics_dbt/logs
+analytics_dbt/target
+mlruns
+data
+artifacts
