@@ -10,7 +10,8 @@ import streamlit as st
 
 try:
     from dashboard.churn_api import (
-        API_BASE_URL,
+        CHURN_SOURCE_LABEL,
+        USING_DEMO_SCORES,
         ChurnAPIError,
         load_account_churn_risk,
         load_api_health,
@@ -19,6 +20,7 @@ try:
     )
     from dashboard.data_loader import (
         DEFAULT_DATABASE_PATH,
+        USING_DEMO_DATABASE,
         DashboardDataError,
         database_signature,
         load_dashboard_data,
@@ -43,7 +45,8 @@ except ModuleNotFoundError as exc:
     if exc.name != "dashboard":
         raise
     from churn_api import (
-        API_BASE_URL,
+        CHURN_SOURCE_LABEL,
+        USING_DEMO_SCORES,
         ChurnAPIError,
         load_account_churn_risk,
         load_api_health,
@@ -52,6 +55,7 @@ except ModuleNotFoundError as exc:
     )
     from data_loader import (
         DEFAULT_DATABASE_PATH,
+        USING_DEMO_DATABASE,
         DashboardDataError,
         database_signature,
         load_dashboard_data,
@@ -390,7 +394,7 @@ def render_retention_and_churn(data: dict[str, pd.DataFrame]) -> None:
 
 
 def render_churn_risk() -> None:
-    """Render Level 6 scores exclusively through the Level 7 API."""
+    """Render Level 6 scores through FastAPI or the bundled demo artifact."""
 
     st.title("Churn Risk")
     st.caption("Model-generated risk ranking for currently active paid accounts.")
@@ -413,8 +417,15 @@ def render_churn_risk() -> None:
         )
         return
 
-    st.sidebar.success("Churn API: Connected")
-    st.sidebar.caption(f"Source: {API_BASE_URL}")
+    if USING_DEMO_SCORES:
+        st.sidebar.info("Churn Risk: Demo Mode")
+        st.caption(
+            "Demo Mode — displaying the saved Level 6 scoring artifact. "
+            "Configure `CHURN_API_URL` to use the Level 7 FastAPI service."
+        )
+    else:
+        st.sidebar.success("Churn API: Connected")
+    st.sidebar.caption(f"Source: {CHURN_SOURCE_LABEL}")
 
     st.header("Risk Overview")
     overview = st.columns(5)
@@ -532,6 +543,12 @@ def main() -> None:
         label_visibility="collapsed",
     )
 
+    st.caption("Portfolio Demo — uses deterministic synthetic SaaS data.")
+    st.caption(
+        "Live streaming, orchestration, and monitoring components are "
+        "demonstrated in repository documentation."
+    )
+
     if selected_page == "Churn Risk":
         render_churn_risk()
         return
@@ -632,15 +649,23 @@ def main() -> None:
         st.caption("All values below reflect the selected account filters.")
     render_kpis(kpis)
 
-    try:
-        stream_path, stream_file_count, stream_mtime_ns = streaming_signature()
-        stream_status = load_streaming_status(
-            stream_path, stream_file_count, stream_mtime_ns
+    if USING_DEMO_DATABASE:
+        st.subheader("Streaming Status")
+        st.info(
+            "Demo Mode — live Kafka streaming is intentionally not started in "
+            "the hosted portfolio app. See the repository documentation for "
+            "the streaming architecture and validation evidence."
         )
-    except DashboardDataError as exc:
-        st.warning(str(exc))
     else:
-        render_streaming_status(stream_status)
+        try:
+            stream_path, stream_file_count, stream_mtime_ns = streaming_signature()
+            stream_status = load_streaming_status(
+                stream_path, stream_file_count, stream_mtime_ns
+            )
+        except DashboardDataError as exc:
+            st.warning(str(exc))
+        else:
+            render_streaming_status(stream_status)
 
     st.divider()
     st.header("Activation Funnel")
@@ -818,8 +843,7 @@ def main() -> None:
         st.markdown(f"- {insight}")
 
     st.caption(
-        "All metrics are calculated from materialized dbt models in "
-        f"{DEFAULT_DATABASE_PATH}."
+        "All metrics are calculated from materialized dbt models in DuckDB."
     )
 
 

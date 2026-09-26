@@ -59,7 +59,7 @@ The deterministic seed-42 batch dataset currently contains 100 accounts:
 | HistGradientBoosting test PR-AUC | 0.173 |
 | Relative PR-AUC improvement over logistic baseline | 32.9% |
 | Test top-decile lift | 2.15× |
-| Python tests | 55 passing |
+| Python tests | 57 passing |
 | dbt tests | 113 passing |
 
 These figures describe a small synthetic demonstration. They are useful for
@@ -205,7 +205,7 @@ The platform validates unique IDs, accepted values, foreign-key relationships,
 account/user ownership, event schema versions, invalid and duplicate events,
 chronology, nonnegative revenue, dbt business rules, and backfill idempotency.
 
-The latest verified suite has **113 passing dbt tests** and **55 passing Python
+The latest verified suite has **113 passing dbt tests** and **57 passing Python
 tests**. The synthetic generator uses a fixed seed, allowing analytical outputs
 to be checked against known generation rules.
 
@@ -328,6 +328,29 @@ The dashboard is at `http://localhost:8501`, API docs at
 Prometheus at `http://localhost:9090`. See
 [docs/local_setup.md](docs/local_setup.md) for prerequisites, terminal layout,
 Kafka, MLflow, shutdown, and troubleshooting.
+
+## Public Portfolio Demo
+
+The Streamlit entry point is `dashboard/app.py`. In a hosted environment it
+automatically uses the compact, deterministic dbt snapshot in `data/demo/` and
+the saved Level 6 churn-ranking artifact. This keeps all three dashboard pages
+available without Kafka, Airflow, Prometheus, MLflow, or FastAPI running.
+
+Streamlit Community Cloud discovers `dashboard/requirements.txt`, which points
+to the minimal `requirements-demo.txt` dependency set. No secrets or login are
+required by the application. To use a separately deployed Level 7 API instead
+of the bundled score artifact, configure `CHURN_API_URL` in the deployment
+environment.
+
+To rebuild the checked-in demo bundle after a clean dbt build:
+
+```bash
+python scripts/create_demo_data.py
+```
+
+The app labels the saved-score fallback as **Demo Mode**. Live streaming,
+orchestration, and monitoring remain local architecture demonstrations and are
+documented in this repository.
 
 ## Repository Structure
 

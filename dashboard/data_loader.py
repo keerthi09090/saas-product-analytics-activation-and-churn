@@ -6,6 +6,7 @@ Parquet files or copy them into a second dashboard-specific data store.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -15,7 +16,15 @@ import streamlit as st
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_DATABASE_PATH = PROJECT_ROOT / "analytics_dbt" / "analytics.duckdb"
+LOCAL_DATABASE_PATH = PROJECT_ROOT / "analytics_dbt" / "analytics.duckdb"
+DEMO_DATABASE_PATH = PROJECT_ROOT / "data" / "demo" / "analytics_demo.duckdb"
+_configured_database = os.getenv("DASHBOARD_DATABASE_PATH")
+DEFAULT_DATABASE_PATH = (
+    Path(_configured_database).expanduser()
+    if _configured_database
+    else LOCAL_DATABASE_PATH if LOCAL_DATABASE_PATH.exists() else DEMO_DATABASE_PATH
+)
+USING_DEMO_DATABASE = DEFAULT_DATABASE_PATH.resolve() == DEMO_DATABASE_PATH.resolve()
 DEFAULT_STREAMING_EVENTS_PATH = (
     PROJECT_ROOT / "data" / "streaming" / "product_events"
 )
@@ -176,8 +185,8 @@ def database_signature(
     resolved_path = database_path.resolve()
     if not resolved_path.exists():
         raise DashboardDataError(
-            "DuckDB database not found at "
-            f"{resolved_path}. Run `dbt run` inside analytics_dbt first."
+            "Dashboard data is unavailable. Run `dbt run` locally or use the "
+            "bundled portfolio demo database."
         )
     return str(resolved_path), resolved_path.stat().st_mtime_ns
 

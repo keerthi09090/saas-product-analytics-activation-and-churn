@@ -1,0 +1,2 @@
+# Streamlit Community Cloud discovers dependencies beside dashboard/app.py.
+-r ../requirements-demo.txt
