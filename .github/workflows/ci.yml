@@ -37,6 +37,9 @@ jobs:
       - name: Generate deterministic SaaS data
         run: python -m simulator.generate
 
+      - name: Initialize empty streaming Parquet schema
+        run: python -c "from streaming.consumer import ensure_streaming_storage; ensure_streaming_storage()"
+
       - name: Build dbt models required by Python tests
         working-directory: analytics_dbt
         run: dbt run --profiles-dir .
