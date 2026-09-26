@@ -27,10 +27,12 @@ python ml/score_accounts.py
 | Method and path | Purpose |
 |---|---|
 | `GET /health` | Confirm the service and artifact loaded |
+| `GET /ready` | Confirm churn routes are ready to serve |
 | `GET /v1/churn/{account_id}` | Retrieve one account's risk and reasons |
 | `GET /v1/churn` | List accounts in descending risk order |
 | `GET /v1/churn?risk_bucket=High&limit=20` | Filter and limit ranking results |
 | `GET /v1/churn/summary` | Summarize risk buckets and high-risk revenue |
+| `GET /metrics` | Expose Prometheus metrics |
 | `GET /docs` | Interactive Swagger documentation |
 | `GET /redoc` | ReDoc documentation |
 
@@ -41,22 +43,22 @@ parameters return HTTP 422.
 Example request:
 
 ```bash
-curl http://127.0.0.1:8000/v1/churn/A040
+curl http://127.0.0.1:8000/v1/churn/A082
 ```
 
 Example response from the reproducible scoring run:
 
 ```json
 {
-  "account_id": "A040",
-  "churn_score": 0.708328,
-  "risk_bucket": "High",
-  "prediction_date": "2025-12-31",
+  "account_id": "A082",
+  "churn_score": 0.583972,
+  "risk_bucket": "Medium",
+  "prediction_date": "2026-09-25",
   "monthly_revenue": 49.0,
   "top_reasons": [
-    "activity declined 75% versus the prior 30 days",
-    "last product activity was 28 days ago",
-    "no report has been created"
+    "no recent reports; last report was 281 days ago",
+    "no integration was connected",
+    "one or fewer active users in the last 30 days"
   ]
 }
 ```

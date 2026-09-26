@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Churn risk ranking</title>
+  <desc id="desc">Portfolio snapshot showing risk-bucket counts and the highest-ranked active paid accounts.</desc>
+  <rect width="1200" height="675" fill="#f8fafc"/>
+  <g font-family="Arial, sans-serif">
+    <text x="55" y="60" font-size="30" font-weight="700" fill="#0f172a">Churn Risk</text>
+    <text x="55" y="91" font-size="16" fill="#64748b">Ranking signal for active paid accounts · not a calibrated probability</text>
+    <g transform="translate(55 125)"><rect width="250" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">Scored Accounts</text><text x="22" y="78" font-size="36" font-weight="700" fill="#0f172a">48</text></g>
+    <g transform="translate(335 125)"><rect width="250" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">High Risk</text><text x="22" y="78" font-size="36" font-weight="700" fill="#b91c1c">0</text></g>
+    <g transform="translate(615 125)"><rect width="250" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">Medium Risk</text><text x="22" y="78" font-size="36" font-weight="700" fill="#b45309">2</text></g>
+    <g transform="translate(895 125)"><rect width="250" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">Low Risk</text><text x="22" y="78" font-size="36" font-weight="700" fill="#0f766e">46</text></g>
+    <rect x="55" y="265" width="1090" height="335" rx="14" fill="#fff" stroke="#e2e8f0"/>
+    <text x="82" y="308" font-size="21" font-weight="700" fill="#0f172a">Highest-Ranked Accounts</text>
+    <g font-size="14" fill="#64748b"><text x="82" y="350">ACCOUNT</text><text x="220" y="350">SCORE</text><text x="350" y="350">RISK</text><text x="465" y="350">MRR</text><text x="570" y="350">MAIN DESCRIPTIVE REASON</text></g>
+    <line x1="82" y1="365" x2="1115" y2="365" stroke="#e2e8f0"/>
+    <g font-size="16" fill="#0f172a">
+      <text x="82" y="411" font-weight="700">A082</text><text x="220" y="411">0.584</text><text x="350" y="411" fill="#b45309" font-weight="700">Medium</text><text x="465" y="411">$49</text><text x="570" y="411">No recent reports; last report was 281 days ago</text>
+      <line x1="82" y1="435" x2="1115" y2="435" stroke="#f1f5f9"/>
+      <text x="82" y="480" font-weight="700">A039</text><text x="220" y="480">0.583</text><text x="350" y="480" fill="#b45309" font-weight="700">Medium</text><text x="465" y="480">$49</text><text x="570" y="480">No recent reports; last report was 268 days ago</text>
+    </g>
+    <rect x="82" y="525" width="420" height="48" rx="8" fill="#fff7ed"/><text x="102" y="555" font-size="15" font-weight="700" fill="#9a3412">Medium-risk monthly revenue: $98</text>
+  </g>
+</svg>

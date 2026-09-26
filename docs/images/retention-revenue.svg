@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Retention behavior and net revenue retention</title>
+  <desc id="desc">Portfolio snapshot comparing retained and churned account behavior and monthly net revenue retention.</desc>
+  <rect width="1200" height="675" fill="#f8fafc"/>
+  <g font-family="Arial, sans-serif">
+    <text x="55" y="60" font-size="30" font-weight="700" fill="#0f172a">Retention &amp; Revenue</text>
+    <text x="55" y="91" font-size="16" fill="#64748b">Observed associations in synthetic paid-account data</text>
+    <rect x="55" y="125" width="520" height="490" rx="14" fill="#fff" stroke="#e2e8f0"/>
+    <text x="82" y="165" font-size="21" font-weight="700" fill="#0f172a">Retained vs Churned Behavior</text>
+    <text x="82" y="199" font-size="14" fill="#64748b">48 retained accounts · 8 churned accounts</text>
+    <g font-size="15">
+      <text x="82" y="250" fill="#334155">Average total events</text><rect x="270" y="231" width="240" height="24" rx="5" fill="#dbeafe"/><rect x="270" y="231" width="240" height="24" rx="5" fill="#2563eb"/><text x="518" y="249" fill="#0f172a">104.8</text><rect x="270" y="263" width="72" height="24" rx="5" fill="#fed7aa"/><text x="350" y="281" fill="#0f172a">31.4</text>
+      <text x="82" y="346" fill="#334155">Average active users</text><rect x="270" y="327" width="240" height="24" rx="5" fill="#2563eb"/><text x="518" y="345" fill="#0f172a">13.2</text><rect x="270" y="359" width="68" height="24" rx="5" fill="#f97316"/><text x="346" y="377" fill="#0f172a">3.8</text>
+      <text x="82" y="442" fill="#334155">Seat utilization</text><rect x="270" y="423" width="240" height="24" rx="5" fill="#2563eb"/><text x="518" y="441" fill="#0f172a">32.3%</text><rect x="270" y="455" width="146" height="24" rx="5" fill="#f97316"/><text x="424" y="473" fill="#0f172a">19.6%</text>
+      <circle cx="92" cy="541" r="7" fill="#2563eb"/><text x="108" y="546" fill="#334155">Retained</text><circle cx="205" cy="541" r="7" fill="#f97316"/><text x="221" y="546" fill="#334155">Churned</text>
+    </g>
+    <rect x="605" y="125" width="540" height="490" rx="14" fill="#fff" stroke="#e2e8f0"/>
+    <text x="632" y="165" font-size="21" font-weight="700" fill="#0f172a">Net Revenue Retention</text>
+    <text x="632" y="199" font-size="14" fill="#64748b">Churn + contraction + expansion, excluding new logos</text>
+    <line x1="650" y1="500" x2="1105" y2="500" stroke="#cbd5e1"/><line x1="650" y1="255" x2="650" y2="500" stroke="#cbd5e1"/>
+    <line x1="650" y1="377" x2="1105" y2="377" stroke="#94a3b8" stroke-dasharray="6 6"/><text x="1090" y="369" font-size="12" fill="#64748b">100%</text>
+    <polyline points="680,377 780,397 880,255 980,478 1080,494" fill="none" stroke="#0f766e" stroke-width="5" stroke-linejoin="round"/>
+    <g fill="#0f766e"><circle cx="680" cy="377" r="7"/><circle cx="780" cy="397" r="7"/><circle cx="880" cy="255" r="7"/><circle cx="980" cy="478" r="7"/><circle cx="1080" cy="494" r="7"/></g>
+    <g font-size="13" fill="#334155" text-anchor="middle"><text x="680" y="535">Aug</text><text x="780" y="535">Sep</text><text x="880" y="535">Oct</text><text x="980" y="535">Nov</text><text x="1080" y="535">Dec</text></g>
+    <g font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle"><text x="680" y="360">100.0%</text><text x="780" y="420">98.4%</text><text x="880" y="238">113.9%</text><text x="980" y="461">83.4%</text><text x="1080" y="477">90.4%</text></g>
+  </g>
+</svg>

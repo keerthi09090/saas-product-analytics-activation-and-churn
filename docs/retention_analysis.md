@@ -1,35 +1,111 @@
-# Retention and Churn Analysis
+# Retention Analysis: What Product Behaviors Are Associated with Retention?
 
-This summary describes the seed-42 synthetic dataset as observed through
-December 2025. Results are associations in simulated data, not causal claims.
+## Scope
 
-## Retention pattern
+This memo analyzes the deterministic seed-42 synthetic dataset through the dbt
+retention and revenue marts. It compares 48 currently active paid accounts with
+8 paid accounts that cancelled.
 
-- Week 0 retention is 100% by cohort definition. Among cohorts old enough to
-  reach Week 4, 49 of 89 accounts were active, a cohort-weighted retention rate
-  of 55.1%.
-- Growth and Enterprise paid accounts both showed 100% current retention in
-  this sample. Starter paid accounts showed 96.6% retention (28 of 29).
-- High- and medium-engagement paid accounts showed 100% current retention.
-  Low-engagement paid accounts showed 91.7% retention (11 of 12).
+The findings are **observational associations from synthetic data**. The
+generator deliberately makes engagement, payment history, and usage influence
+cancellation, so these patterns partly recover its design. They are not causal
+claims and should not be treated as evidence that forcing one behavior will
+prevent churn.
 
-## Behavior associated with retention
+## Summary
 
-- Retained paid accounts averaged 98.9 events and 11.4 active users, compared
-  with 8 events and 1 active user for the churned group.
-- Retained accounts averaged 8.9 reports created, 4.2 reports exported, and
-  0.53 integration connections. The churned group averaged 1 report created,
-  2 exports, and no integration connection.
-- The churned comparison contains one account, so these differences are
-  descriptive and should not be generalized beyond this synthetic sample.
+Retained accounts are broader and more frequent product users in this sample.
+They generate more events, involve more users, use more of their purchased
+seats, create more reports, and connect integrations more often than churned
+accounts. Low-engagement accounts have the weakest observed retention.
 
-## Churn and revenue
+These signals are useful for deciding what a retention analyst should inspect:
+recent activity, active-user breadth, seat utilization, reporting behavior,
+integration status, and payment history.
 
-- Logo churn was 0% from July through November and 2.17% in December (1 of 46
-  opening paid accounts).
-- December churned MRR was $49, equal to 0.35% of $13,954 starting MRR.
-- NRR was 100.0% in August, 88.5% in September, 100.0% in October, 108.2% in
-  November, and 99.6% in December. September included $200 of contraction;
-  November included $750 of expansion.
+## Retained vs Churned Behavior
 
-All figures come from the Level 5 dbt marts in `analytics_dbt/analytics.duckdb`.
+| Behavior | Retained | Churned | Observed difference |
+|---|---:|---:|---:|
+| Average total events | 104.8 | 31.4 | 3.3× higher for retained |
+| Average active users | 13.2 | 3.8 | 3.5× higher for retained |
+| Average seat utilization | 32.3% | 19.6% | +12.7 percentage points |
+| Average reports created | 9.3 | 3.1 | 3.0× higher for retained |
+| Average reports exported | 3.0 | 0.9 | 3.4× higher for retained |
+| Average integrations connected | 0.54 | 0.25 | 2.2× higher for retained |
+| Average dashboard views | 27.1 | 8.6 | 3.1× higher for retained |
+
+### Active usage
+
+The largest separation is overall product depth: retained accounts average
+104.8 events and 13.2 active users, compared with 31.4 events and 3.8 active
+users for churned accounts. This suggests reviewing both frequency and breadth;
+one active champion may not represent healthy account adoption.
+
+### Reporting workflow
+
+Retained accounts create and export materially more reports. In this synthetic
+product, report creation is a deeper workflow than a login or dashboard view,
+so the difference indicates that retained accounts reach recurring value more
+often.
+
+### Integrations
+
+Retained accounts average 0.54 integration connections versus 0.25 for churned
+accounts. Integration use is not necessary for every account, but absence of an
+integration combined with low activity or few active users is a useful review
+signal.
+
+### Seat utilization
+
+Retained accounts use 32.3% of purchased seats on average versus 19.6% for
+churned accounts. Low utilization can mean rollout friction, over-purchasing, or
+value concentrated in too few users. The metric needs account context before
+any customer-facing action.
+
+## Engagement and Segment Patterns
+
+Observed paid-account retention rises with the synthetic engagement state:
+
+| Engagement | Paid accounts | Retained | Churned | Retention |
+|---|---:|---:|---:|---:|
+| Low | 12 | 9 | 3 | 75.0% |
+| Medium | 27 | 23 | 4 | 85.2% |
+| High | 17 | 16 | 1 | 94.1% |
+
+Enterprise accounts show 100% observed retention in this run, while Growth and
+Starter are each 83.3%. The Enterprise group contains only eight accounts, so
+the result should not be generalized.
+
+## Revenue Context
+
+- 56 of 100 trial accounts converted to paid.
+- 48 paid accounts remain active and 8 have churned.
+- December logo churn is 9.3%: 4 cancellations from 43 opening accounts.
+- December churned MRR is $596, or 4.24% of $14,057 starting MRR.
+- December NRR is 90.4% after churn and contraction; new-logo revenue is
+  excluded.
+- October NRR reaches 113.9% because $750 of expansion exceeds churn and
+  contraction for the existing base.
+
+## Recommended Human Review
+
+A retention team using this synthetic demonstration would prioritize accounts
+where several signals occur together:
+
+1. falling 7-day or 30-day event activity;
+2. long time since last activity, report, or login;
+3. one or very few active users;
+4. low seat utilization;
+5. no integration and little reporting depth; and
+6. recent or repeated failed payments.
+
+These observations should start an investigation, not trigger an automated
+message, discount, or account decision.
+
+## Reproducibility
+
+Figures come from `mart_retention_behavior`, `mart_retention_segments`,
+`mart_logo_churn`, `mart_revenue_churn`, and `mart_revenue_retention` in
+`analytics_dbt/analytics.duckdb`. Regenerate the seed-42 data and run dbt to
+reproduce them.

@@ -1,513 +1,367 @@
-# SaaS Product Analytics, Activation, and Churn — Levels 1–11
+# SaaS Product Analytics, Activation, and Churn Platform
 
 [![CI](https://github.com/keerthi09090/saas-product-analytics-activation-and-churn/actions/workflows/ci.yml/badge.svg)](https://github.com/keerthi09090/saas-product-analytics-activation-and-churn/actions/workflows/ci.yml)
+[![Data Quality](https://github.com/keerthi09090/saas-product-analytics-activation-and-churn/actions/workflows/data_quality.yml/badge.svg)](https://github.com/keerthi09090/saas-product-analytics-activation-and-churn/actions/workflows/data_quality.yml)
 
-This project creates realistic fake SaaS data, analyzes it with DuckDB and SQL,
-organizes the analytics layer with dbt-duckdb, presents activation, retention,
-churn, and revenue results in Streamlit, and demonstrates leakage-safe churn
-risk modeling. It also includes a FastAPI serving layer, Kafka streaming,
-Airflow orchestration, Prometheus/OpenTelemetry observability, and GitHub
-Actions quality gates for a complete local portfolio system.
+An end-to-end SaaS analytics platform that combines product-event streaming,
+analytics engineering, retention analysis, churn-risk modeling, APIs,
+orchestration, observability, and CI/CD.
 
-The generator creates approximately 100 fictional customer accounts and five related Parquet tables. A fixed random seed makes every run reproducible.
+The project uses a reproducible, behavior-driven **synthetic dataset** so the
+entire system can be demonstrated publicly without customer data. It is a
+portfolio implementation, not a production deployment at a real company.
 
-## Project structure
+[Architecture](#architecture) · [Screenshots](#project-screenshots) ·
+[Run locally](#running-locally) · [5-minute demo](docs/demo.md) ·
+[Model card](docs/model_card.md) ·
+[Retention memo](docs/retention_analysis.md)
 
-```text
-saas-product-analytics/
-├── README.md
-├── requirements.txt
-├── data/
-│   ├── accounts.parquet
-│   ├── users.parquet
-│   ├── subscriptions.parquet
-│   ├── invoices.parquet
-│   └── events.parquet
-├── simulator/
-│   ├── __init__.py
-│   └── generate.py
-├── tests/
-│   └── test_generator.py
-├── analytics/
-│   ├── setup.sql
-│   ├── activation.sql
-│   ├── usage_metrics.sql
-│   └── run_metrics.py
-├── analytics_dbt/
-│   ├── dbt_project.yml
-│   ├── profiles.yml
-│   ├── models/
-│   │   ├── staging/
-│   │   ├── intermediate/
-│   │   └── marts/
-│   └── tests/
-├── dashboard/
-│   ├── app.py
-│   ├── data_loader.py
-│   └── metrics.py
-├── ml/
-│   ├── build_dataset.py
-│   ├── train.py
-│   ├── evaluate.py
-│   ├── explain.py
-│   ├── score_accounts.py
-│   └── utils.py
-├── artifacts/
-│   ├── churn_training_data.parquet
-│   ├── churn_model.pkl
-│   ├── logistic_model.pkl
-│   ├── model_metrics.json
-│   ├── feature_importance.csv
-│   └── churn_risk_scores.parquet
-└── docs/
-    ├── retention_analysis.md
-    └── churn_model_card.md
+## Business Problem
+
+A B2B SaaS company needs a shared view of the customer journey. Teams want to
+know:
+
+- Which customers activate successfully, and how long does activation take?
+- Which features are adopted and which accounts remain engaged?
+- How does retention change over time?
+- Which customers churn, and how much recurring revenue is lost?
+- Which active customers appear most at risk?
+- Which accounts should a retention team investigate first, and why?
+
+This platform brings those questions into one tested analytical system instead
+of separate spreadsheets, product logs, billing extracts, and model outputs.
+
+## What This Platform Does
+
+1. Generates realistic SaaS accounts, users, subscriptions, invoices, and events.
+2. Calculates activation, adoption, and active-account metrics.
+3. Builds typed, tested analytics models with dbt and DuckDB.
+4. Presents product analytics in an interactive Streamlit dashboard.
+5. Measures cohort retention, logo churn, revenue churn, expansion, and NRR.
+6. Trains and evaluates a leakage-aware churn-risk model.
+7. Serves account scores and descriptive risk signals through FastAPI.
+8. Processes continuously produced product events through Kafka.
+9. Orchestrates snapshots, transformations, tests, and scoring with Airflow.
+10. Exposes health, freshness, error, latency, and workflow signals.
+11. Validates every push and pull request with GitHub Actions.
+
+## Verified Project Results
+
+The deterministic seed-42 batch dataset currently contains 100 accounts:
+
+| Result | Value |
+|---|---:|
+| Activated accounts | 50 |
+| Activation rate | 50% |
+| Median time to activation | 5 days |
+| Trial conversion rate | 56% |
+| Paid accounts retained / churned | 48 / 8 |
+| HistGradientBoosting test PR-AUC | 0.173 |
+| Relative PR-AUC improvement over logistic baseline | 32.9% |
+| Test top-decile lift | 2.15× |
+| Python tests | 55 passing |
+| dbt tests | 113 passing |
+
+These figures describe a small synthetic demonstration. They are useful for
+verifying the system and comparing approaches, not for making real customer
+claims.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    G[Synthetic SaaS Generator] --> BP[(Batch Parquet)]
+    G --> K[[Kafka Events]]
+    K --> C[Validated Kafka Consumer]
+    C --> SP[(Streaming Parquet)]
+    BP --> D[(DuckDB)]
+    SP --> D
+    D --> T[dbt Models & Tests]
+    T --> M[(Analytics Marts)]
+    M --> S[Streamlit Product & Retention Views]
+    M --> ML[ML Pipeline]
+    ML --> CS[(Churn Scores)]
+    CS --> API[FastAPI]
+    API --> CR[Streamlit Churn Risk]
+
+    A[Airflow: snapshots → dbt → tests → scoring] -. orchestrates .-> BP
+    A -. orchestrates .-> T
+    A -. refreshes .-> CS
+    O[Prometheus + OpenTelemetry] -. monitors API, streaming, freshness & Airflow .-> API
+    O -. monitors .-> C
+    GH[GitHub Actions] -. lint, tests, dbt & data quality .-> T
 ```
 
-## Install and run
+Kafka handles continuously arriving product events. Airflow handles scheduled
+snapshots, transformations, validation, backfills, and score refreshes. They
+solve different timing problems and are intentionally kept separate.
 
-Create a virtual environment and install the small dependency set:
+## Project Screenshots
+
+The following data-backed portfolio snapshots use the current reproducible
+outputs and contain no credentials or private paths.
+
+### Executive Overview and Feature Adoption
+
+![Executive overview with activation, conversion, activity, and feature adoption](docs/images/executive-overview.svg)
+
+### Retention Cohorts, Churn, Revenue, and NRR
+
+![Retained versus churned behavior and net revenue retention](docs/images/retention-revenue.svg)
+
+### Churn Risk Ranking
+
+![Risk distribution and highest-ranked active paid accounts](docs/images/churn-risk.svg)
+
+### Streaming Status, Airflow DAG, and Prometheus Signals
+
+![Kafka event path, Airflow orchestration, and observability signals](docs/images/platform-operations.svg)
+
+### GitHub Actions Passing
+
+![Passing CI and Data Quality workflows](docs/images/ci-quality-gates.svg)
+
+## Tech Stack
+
+| Technology | Why it is used |
+|---|---|
+| Python | Synthetic data generation, validation, ML, API, and pipeline logic |
+| Parquet | Compact, typed analytical storage for batch and streamed events |
+| DuckDB | Lightweight local analytical warehouse with direct Parquet access |
+| dbt | Reviewable SQL transformations, tests, lineage, and analytics marts |
+| Streamlit | Interactive business-facing product, retention, and risk views |
+| scikit-learn | Reproducible baseline and tree-based churn-risk models |
+| MLflow | Local experiment parameters, metrics, and artifact tracking |
+| FastAPI | Typed, documented access to the latest churn ranking |
+| Kafka | Continuous delivery of product events independent of batch snapshots |
+| Airflow | Scheduled snapshots, dependency ordering, retries, and backfills |
+| Prometheus | Numeric API, streaming, freshness, and workflow health metrics |
+| OpenTelemetry | Request instrumentation and trace correlation |
+| Docker Compose | Repeatable local Kafka, Airflow, API, and monitoring services |
+| GitHub Actions | Automated lint, test, dbt, and data-quality gates |
+
+Each tool has one explicit responsibility; the architecture is not intended as
+a technology-count exercise.
+
+## Data Model
+
+The five source entities are:
+
+- **accounts** — company profile, plan, seats, channel, and synthetic engagement state;
+- **users** — product users and roles belonging to valid accounts;
+- **subscriptions** — trials, paid starts, status, price, and cancellation date;
+- **invoices** — historical billing periods and payment outcomes; and
+- **product events** — timestamped workspace, invitation, integration, report,
+  dashboard, and login behavior.
+
+dbt types and cleans these sources in `stg_accounts`, `stg_users`, `stg_events`,
+`stg_subscriptions`, and `stg_invoices`. `dim_account`, `dim_user`,
+`fact_product_events`, and `fact_subscriptions` provide reusable analytical
+entities. Business outputs include `mart_activation`, `mart_feature_adoption`,
+`mart_retention_cohorts`, `mart_logo_churn`, `mart_revenue_churn`, and
+`mart_revenue_retention`.
+
+## Key Metrics
+
+| Metric | Definition |
+|---|---|
+| Activation Rate | Accounts completing workspace creation, an invitation, and an integration connection within 14 days of trial start ÷ trial accounts |
+| Median Time to Activation | Median days from trial start until the final required activation milestone |
+| Feature Adoption | Accounts using a feature at least once ÷ eligible accounts |
+| Weekly Active Accounts | Unique accounts with at least one product event in a calendar week |
+| Monthly Active Accounts | Unique accounts with at least one product event in a calendar month |
+| Trial Conversion | Accounts that became paid subscriptions ÷ trial accounts |
+| Retention | Share of a signup cohort active in a later week |
+| Logo Churn | Paid accounts cancelled during a month ÷ paid accounts at month start |
+| Revenue Churn | MRR lost from cancellations ÷ starting MRR |
+| Expansion MRR | Additional recurring revenue from upgrades among existing customers |
+| Net Revenue Retention | `(starting MRR − churn − contraction + expansion) ÷ starting MRR` |
+| Churn Risk Score | Model output used to rank active paid accounts for review |
+
+Churn risk scores are ranking signals and are **not claimed to be perfectly
+calibrated churn probabilities**.
+
+## Churn Risk Modeling
+
+Monthly prediction snapshots ask whether an eligible active paid account will
+cancel in the next 30 days. Features are cut off at each prediction date to
+avoid using future activity or billing information.
+
+- **Baseline:** Logistic Regression
+- **Selected tree model:** HistGradientBoosting
+- **Signals:** recent event frequency, activity decline, recency, adoption,
+  seat utilization, billing/payment history, activation, and account attributes
+- **Evaluation:** PR-AUC, ROC-AUC, precision, recall, F1, and top-10% lift
+
+On the held-out December test month, the tree model reached PR-AUC 0.173 versus
+0.130 for logistic regression—a 32.9% relative improvement—and 2.15×
+top-decile lift. The absolute sample is small: 107 account-month observations
+and eight churn labels. See the [model card](docs/model_card.md) for the split,
+limitations, and intended human-review use.
+
+## Data Quality and Reliability
+
+The platform validates unique IDs, accepted values, foreign-key relationships,
+account/user ownership, event schema versions, invalid and duplicate events,
+chronology, nonnegative revenue, dbt business rules, and backfill idempotency.
+
+The latest verified suite has **113 passing dbt tests** and **55 passing Python
+tests**. The synthetic generator uses a fixed seed, allowing analytical outputs
+to be checked against known generation rules.
+
+## Real-Time Event Streaming
+
+The producer publishes finite demonstrations of product events to Kafka. The
+consumer validates account/user relationships, accepts schema v1 and v2,
+rejects malformed events without crashing, ignores duplicate event IDs, and
+writes valid batches to Parquet for the dbt event model.
+
+The local dashboard freshness goal is **under five minutes**. This is a
+portfolio development target, not a production SLA. The event schema and
+failure behavior are documented in [the event contract](docs/event_contract.md).
+
+## Orchestration and Backfills
+
+Airflow schedules account, subscription, and invoice snapshots, followed by
+`dbt run`, `dbt test`, and churn-score refresh. A failing data-quality step
+blocks scoring. Historical logical dates can be rebuilt safely: rerunning the
+same date atomically replaces the same partition instead of duplicating rows.
+
+## Churn Risk API
+
+FastAPI loads the latest score artifact once at startup and never retrains the
+model during a request.
+
+| Endpoint | Purpose |
+|---|---|
+| `GET /health` | Service and score-artifact health |
+| `GET /ready` | Readiness for serving churn routes |
+| `GET /v1/churn/{account_id}` | One account's score and descriptive reasons |
+| `GET /v1/churn` | Descending risk ranking with filters and limit |
+| `GET /v1/churn/summary` | Bucket counts and high-risk monthly revenue |
+| `GET /metrics` | Prometheus metrics |
+
+FastAPI also generates interactive documentation at `/docs` and `/redoc`.
+
+```json
+{
+  "account_id": "A082",
+  "churn_score": 0.583972,
+  "risk_bucket": "Medium",
+  "prediction_date": "2026-09-25",
+  "monthly_revenue": 49.0,
+  "top_reasons": [
+    "no recent reports; last report was 281 days ago",
+    "no integration was connected",
+    "one or fewer active users in the last 30 days"
+  ]
+}
+```
+
+More examples are in [docs/api.md](docs/api.md).
+
+## Observability
+
+- **FastAPI:** request count, errors, normalized routes, latency histograms,
+  readiness, and trace IDs;
+- **Kafka:** received, persisted, rejected, and duplicate event counts plus
+  latest-event freshness;
+- **Analytics:** dbt success, DuckDB refresh, and score-artifact timestamps; and
+- **Airflow:** latest DAG success, failure, and completion state.
+
+A verified local development run sent 200 measured API requests with zero
+errors, p50 latency of approximately **1.89 ms**, and p95 of approximately
+**2.64 ms**. This tiny in-memory, loopback benchmark is not a production SLA.
+See [docs/observability.md](docs/observability.md).
+
+## CI/CD and Automated Quality Gates
+
+Every push and pull request to `main` runs Ruff, deterministic data setup,
+Python tests, dbt models, dbt tests, data-contract checks, API tests, ML tests,
+streaming tests, Airflow pipeline tests, and observability tests. The streaming
+fixture script creates a zero-row, schema-correct Parquet file on clean runners
+without committing generated Kafka data.
+
+The **CI** and **Data Quality** workflows currently pass. Workflow intent and
+failure interpretation are in [docs/ci_cd.md](docs/ci_cd.md).
+
+## Project Story
+
+**Problem:** A B2B SaaS company needs a unified view of activation, adoption,
+retention, recurring revenue, and churn risk.
+
+**Approach:** Build one local analytical platform combining realistic batch and
+streaming inputs, tested transformations, dashboards, time-aware ML scoring,
+an API, orchestration, monitoring, and CI.
+
+**Outcome:** The system surfaces activation bottlenecks, feature adoption,
+retention patterns, revenue movement, and a reasoned queue of accounts for
+human review. All outcomes come from synthetic data and demonstrate engineering
+and analytical methods rather than real-company performance.
+
+## Running Locally
 
 ```bash
+git clone https://github.com/keerthi09090/saas-product-analytics-activation-and-churn.git
+cd saas-product-analytics-activation-and-churn
 python3 -m venv .venv
 source .venv/bin/activate
-pip install -r requirements.txt
-```
+python -m pip install -r requirements.txt
 
-Generate the data:
-
-```bash
-python -m simulator.generate
-```
-
-The default run uses 100 accounts and seed `42`. Optional arguments are available:
-
-```bash
-python -m simulator.generate --accounts 100 --seed 42 --output data
-```
-
-Run the tests:
-
-```bash
-pytest
-```
-
-## Level 2: analyze the Parquet files with DuckDB
-
-After generating the Level 1 data, run:
-
-```bash
-python analytics/run_metrics.py
-```
-
-DuckDB reads the five Parquet files directly and prints activation rate, median time to activation, trial conversion, weekly active accounts, monthly active accounts, and feature adoption.
-
-Activation requires `workspace_created`, `invite_sent`, and `integration_connected` during the half-open 14-day window beginning on `trial_start_date`. The activation date is when the last of those three requirements occurs.
-
-The Level 2 files have separate responsibilities:
-
-- `analytics/setup.sql` creates five DuckDB views over the Parquet files.
-- `analytics/activation.sql` produces one activation row per account and the activation summary.
-- `analytics/usage_metrics.sql` calculates conversion, weekly/monthly activity, and adoption.
-- `analytics/run_metrics.py` executes the SQL, validates the results, and prints the report.
-
-## Level 3: organize analytics with dbt and DuckDB
-
-The dbt project reads the same Level 1 Parquet files and builds typed staging
-views, reusable intermediate views, dimensions, fact tables, and analytics
-marts. It preserves the Level 2 activation definition exactly.
-
-Run it from the dbt project directory:
-
-```bash
-cd analytics_dbt
-source ../.venv/bin/activate
-dbt debug
-dbt run
-dbt test
-```
-
-The resulting local database is `analytics_dbt/analytics.duckdb`. Example
-queries are documented in `analytics_dbt/README.md`.
-
-## Level 4: Streamlit product analytics dashboard
-
-Run the dashboard from the project root after `dbt run`:
-
-```bash
-source .venv/bin/activate
-streamlit run dashboard/app.py
-```
-
-The dashboard reads only materialized dbt models from
-`analytics_dbt/analytics.duckdb`; it does not copy the Parquet data. It includes
-executive KPIs, an activation funnel, feature adoption, weekly and monthly
-active-account trends, a sortable account-activity table, account filters, and
-calculated descriptive insights.
-
-Model ownership is intentionally simple:
-
-- `dim_account` supplies account totals, filter attributes, and cohort context.
-- `fact_subscriptions` supplies trial-conversion status.
-- `mart_activation` supplies activation results.
-- `mart_feature_adoption` supplies unfiltered feature adoption.
-- `fact_product_events` supplies funnel milestones, filtered adoption, and activity trends.
-- `mart_account_activity` supplies the account-level activity table.
-
-## Level 5: retention, churn, and revenue
-
-Level 5 adds weekly retention cohorts, monthly logo churn, account-month MRR,
-revenue churn, expansion, contraction, NRR, segment comparisons, seat
-utilization, and recency metrics. The Streamlit sidebar now includes a
-**Retention & Churn** page with a cohort heatmap and the Level 5 trends.
-
-Rebuild and validate the complete project from the repository root:
-
-```bash
 python -m simulator.generate
 cd analytics_dbt
 dbt run --profiles-dir .
 dbt test --profiles-dir .
 cd ..
-streamlit run dashboard/app.py
-```
 
-The concise findings for the reproducible seed-42 dataset are in
-`docs/retention_analysis.md`.
-
-## Level 6: time-based churn prediction
-
-Level 6 predicts whether an active paid account will cancel in the next 30
-days. Monthly snapshots use only events and invoices known on their prediction
-date. Training, validation, and testing are separated chronologically.
-
-Build and validate the dbt feature mart first, then run the ML workflow from
-the project root:
-
-```bash
-cd analytics_dbt
-dbt run --profiles-dir .
-dbt test --profiles-dir .
-cd ..
-
-python ml/build_dataset.py
-python ml/train.py
-python ml/evaluate.py
-python ml/explain.py
-python ml/score_accounts.py
-python -m pytest
-```
-
-The workflow compares a logistic-regression baseline with histogram gradient
-boosting, tracks both experiments in local MLflow, writes reproducible files to
-`artifacts/`, and produces a retention-team ranking with descriptive account
-reasons. Open MLflow locally with:
-
-```bash
-mlflow ui --backend-store-uri ./mlruns --port 5000
-```
-
-See `docs/churn_model_card.md` for the label definition, split dates, held-out
-metrics, interpretation, limitations, and responsible-use guidance.
-
-## Level 7: churn-risk API
-
-Level 7 serves the latest Level 6 risk-score artifact through a separate,
-read-only FastAPI application. It loads the Parquet file once at startup; it
-does not retrain the model or trigger customer actions.
-
-Start it from the project root:
-
-```bash
-source .venv/bin/activate
-uvicorn api.main:app --reload
-```
-
-Interactive documentation is available at `http://127.0.0.1:8000/docs` and
-ReDoc at `http://127.0.0.1:8000/redoc`. See `docs/api.md` for endpoints, sample
-responses, interpretation, and the local load-test command.
-
-## Level 8: continuous product events with Kafka
-
-Level 8 adds a parallel streaming path without replacing the reproducible
-batch generator:
-
-```text
-                           ┌─> Batch Parquet ───────────┐
-Synthetic SaaS activity ───┤                            ├─> DuckDB/dbt ─> Dashboard
-                           └─> Kafka ─> Consumer ─> Streaming Parquet ─┘
-```
-
-Kafka is used only for continuously arriving product events. Account, billing,
-and subscription snapshots remain batch inputs and can be orchestrated in a
-later level.
-
-The producer is finite by default, emits valid account/user relationships,
-supports event contract versions 1 and 2, favors high-engagement accounts, and
-slows its emission rate on weekends. The consumer validates messages, rejects
-bad records without stopping, deduplicates `event_id`, and writes buffered,
-append-friendly Parquet files. See `docs/event_contract.md` for the contract.
-
-### Level 8 demo
-
-Docker Desktop must be installed and running. From the project root, use three
-terminals. The consumer prints every valid v1/v2 message, duplicate, rejection,
-and Parquet flush so the complete path is visible during the demo.
-
-Terminal 1 — start the single KRaft Kafka broker and create `product-events`:
-
-```bash
-docker compose up -d
-docker compose ps
-```
-
-Terminal 2 — start the buffered raw-event writer:
-
-```bash
-source .venv/bin/activate
-python -m streaming.consumer
-```
-
-Terminal 3 — send 100 events, including deliberate duplicate deliveries:
-
-```bash
-source .venv/bin/activate
-python -m streaming.producer --events 100 --interval 1
-```
-
-For a short duplicate and invalid-message demonstration, run this after the
-consumer is connected:
-
-```bash
-python -m streaming.producer --events 10 --interval 0.1 \
-  --duplicate-every 5 --send-invalid
-```
-
-The duplicate deliveries are printed by the consumer but are not persisted a
-second time. The invalid message is logged under `data/streaming/rejected/`,
-and the consumer continues running. Batches flush every 25 valid events or 10
-seconds, whichever happens first. Inspect the persisted files and summary with:
-
-```bash
-ls -lh data/streaming/product_events/
-python -m streaming.status
-```
-
-Stop the consumer with Ctrl+C, then make the events available to materialized
-dbt models:
-
-```bash
-cd analytics_dbt
-dbt run --profiles-dir .
-dbt test --profiles-dir .
-cd ..
-```
-
-Start or refresh Streamlit and inspect the compact **Streaming Status** block
-on Product Analytics:
-
-```bash
-streamlit run dashboard/app.py
-```
-
-The local target is raw dashboard freshness under five minutes. It is a
-development target, not a production SLA. Stop Kafka with:
-
-```bash
-docker compose down
-```
-
-## Level 9: scheduled batch orchestration with Airflow
-
-Level 9 keeps the real-time and scheduled paths deliberately separate:
-
-```text
-Kafka   -> continuous product events -> streaming Parquet
-Airflow -> dated account/subscription/invoice snapshots -> dbt -> tests -> scoring
-```
-
-Airflow never starts or schedules the Kafka producer or consumer. It handles
-daily snapshots, transformations, data-quality gates, safe historical
-backfills, and an optional refresh using the already-trained churn model.
-
-### Start Airflow locally
-
-Docker Desktop must be running. Copy the local Airflow UID setting once, then
-build and start the simple Postgres + scheduler + webserver stack:
-
-```bash
+# Optional multi-service stack: Docker Desktop must be running.
 cp .env.example .env
-docker compose up -d
-docker compose ps
-```
-
-The first build downloads Airflow and installs the project data dependencies,
-so it takes longer than later starts. Open `http://localhost:8080` and sign in
-with the local values from `AIRFLOW_ADMIN_USER` and `AIRFLOW_ADMIN_PASSWORD` in
-your ignored `.env` file. `.env.example` contains placeholders only.
-
-The `daily_saas_pipeline` DAG is intentionally paused when first created. In
-the UI, unpause it and press **Trigger DAG**, or use:
-
-```bash
-docker compose exec airflow-webserver airflow dags unpause daily_saas_pipeline
-docker compose exec airflow-webserver airflow dags trigger \
-  --exec-date 2026-09-25 daily_saas_pipeline
-```
-
-Its intended schedule is once per day. Tasks run in this strict order:
-
-```text
-snapshot_accounts
-  -> snapshot_subscriptions
-  -> snapshot_invoices
-  -> dbt_run
-  -> dbt_test
-  -> refresh_churn_scores
-```
-
-Because normal Airflow dependencies require success, a failed `dbt_test`
-prevents churn scoring. Scoring uses the existing model and does not retrain it.
-Disable scoring when desired with:
-
-```bash
-docker compose exec airflow-webserver airflow variables set \
-  enable_churn_scoring false
-```
-
-Each task has two retries with a two-minute delay and a 15-minute execution
-timeout. Task logs show the logical date, input, output, row count, and result;
-inspect them by selecting a DAG run and task in the Airflow Grid view.
-
-### Snapshot idempotency
-
-The three snapshot scripts use Airflow's `{{ ds }}` logical date, never the
-container clock. They atomically overwrite one deterministic partition:
-
-```text
-data/snapshots/accounts/date=2026-09-25/accounts.parquet
-data/snapshots/subscriptions/date=2026-09-25/subscriptions.parquet
-data/snapshots/invoices/date=2026-09-25/invoices.parquet
-```
-
-Primary keys are checked before writing. Repeating the same date replaces the
-same file, so row counts do not double. You can demonstrate this without the UI:
-
-```bash
-python -m pipelines.snapshot_accounts --snapshot-date 2026-09-25
-python -m pipelines.snapshot_accounts --snapshot-date 2026-09-25
-```
-
-### Historical backfill
-
-The separate `backfill_saas_pipeline` uses the same idempotent scripts. Run a
-date range with Airflow logical dates:
-
-```bash
-docker compose exec airflow-webserver airflow dags backfill \
-  backfill_saas_pipeline \
-  --start-date 2026-09-21 \
-  --end-date 2026-09-23
-```
-
-To deliberately rebuild an already-run range, add `--reset-dagruns`. Each day
-creates or replaces its own `date=...` partition. Inspect outputs with:
-
-```bash
-find data/snapshots -name '*.parquet' -print | sort
-```
-
-Stop Airflow and Kafka while retaining the Airflow metadata volume with:
-
-```bash
-docker compose down
-```
-
-Use `docker compose down -v` only when you intentionally want to delete local
-Airflow metadata and run history.
-
-## Level 10: local observability
-
-Level 10 adds Prometheus metrics and OpenTelemetry request traces without
-changing the existing Kafka or Airflow responsibilities. Start the complete
-local stack with:
-
-```bash
 docker compose up -d --build
+
+# If running the apps directly instead of their containers:
+uvicorn api.main:app --reload
+streamlit run dashboard/app.py
 ```
 
-FastAPI runs at `http://localhost:8000`, Prometheus at
-`http://localhost:9090`, and the Prometheus targets page is
-`http://localhost:9090/targets`. See `docs/observability.md` and
-`monitoring/README.md` for monitored signals, PromQL examples, and local
-verification commands.
+The dashboard is at `http://localhost:8501`, API docs at
+`http://localhost:8000/docs`, Airflow at `http://localhost:8080`, and
+Prometheus at `http://localhost:9090`. See
+[docs/local_setup.md](docs/local_setup.md) for prerequisites, terminal layout,
+Kafka, MLflow, shutdown, and troubleshooting.
 
-## Level 11: GitHub Actions quality gates
+## Repository Structure
 
-Level 11 adds two GitHub Actions workflows for pushes and pull requests to
-`main`. `CI` runs Ruff, deterministic data/model preparation, and all Python
-tests. `Data Quality` runs `dbt debug`, `dbt run`, `dbt test`, and focused data
-contract and pipeline checks. See `docs/ci_cd.md` for workflow behavior, failure
-interpretation, and a safe red-to-green demonstration.
-
-## What each table represents
-
-### `accounts.parquet`
-
-One row per fictional customer company. It contains company size, plan, purchased seats, acquisition channel, signup timing, and a hidden synthetic engagement level used to drive behavior.
-
-### `users.parquet`
-
-Provisioned product users belonging to the accounts. Larger companies and higher plans generally have more users, but user counts never exceed purchased seats. Invited users are created after their invitation.
-
-### `subscriptions.parquet`
-
-One subscription per account, including trial dates, paid start date when applicable, cancellation date, current status, current plan, and monthly price. Most accounts are active or still in trial; only a small fraction are cancelled.
-
-### `invoices.parquet`
-
-Calendar-aligned billing periods for active or cancelled paid subscriptions. Each invoice preserves the historical plan and price, making upgrades and downgrades auditable. Trial-only accounts do not receive invoices.
-
-### `events.parquet`
-
-Chronological product behavior. Workspaces are created first, invitations and integrations follow, and reports must be created before exports. High-engagement accounts create more events, and weekday activity is much higher than weekend activity.
-
-## Inspect the first five rows
-
-Run this from the project root:
-
-```python
-from pathlib import Path
-import pandas as pd
-
-for path in sorted(Path("data").glob("*.parquet")):
-    print(f"\n{path.name}")
-    print(pd.read_parquet(path).head())
+```text
+api/                 FastAPI churn-risk service
+airflow/             Daily and historical backfill DAGs
+analytics_dbt/       Staging, intermediate, fact, dimension, and mart models
+dashboard/           Streamlit product, retention, and churn-risk views
+docs/                Contracts, setup, demo, model, analysis, and operations docs
+ml/                  Leakage-aware dataset, training, evaluation, and scoring
+monitoring/          Prometheus configuration and queries
+pipelines/           Idempotent snapshots and score refresh commands
+simulator/           Deterministic synthetic SaaS data generator
+streaming/           Kafka producer, validated consumer, schema, and metrics
+tests/               Unit, integration, data, API, ML, and pipeline tests
+.github/workflows/   CI and Data Quality workflows
 ```
 
-Or inspect one table:
+## Documentation
 
-```python
-import pandas as pd
+- [Local setup](docs/local_setup.md)
+- [5-minute demo guide](docs/demo.md)
+- [Retention analysis](docs/retention_analysis.md)
+- [Churn model card](docs/model_card.md)
+- [Event contract](docs/event_contract.md)
+- [API reference](docs/api.md)
+- [Observability guide](docs/observability.md)
+- [CI/CD guide](docs/ci_cd.md)
 
-accounts = pd.read_parquet("data/accounts.parquet")
-print(accounts.head())
-```
+## Assumptions and Responsible Use
 
-## Assumptions
-
-- The simulated observation date is fixed at December 31, 2025 so results do not change with the real calendar.
-- Trials last 14 days.
-- Monthly prices are `$49` for Starter, `$249` for Growth, and `$999` for Enterprise.
-- Company size and seat ranges grow by plan.
-- User utilization and event volume depend on the account's synthetic engagement level.
-- Only Admin users connect integrations or send the initial invitations in this Level 1 model.
-- Managers and Analysts can create and export reports; Members mainly log in and view dashboards.
-- Weekend activity is intentionally much lower than weekday activity.
-- Cancelled accounts stop generating activity and invoices at their simulated cancellation date.
-- Invoice periods follow calendar-month renewals from each paid start date.
-- Plan changes move one adjacent tier at a renewal; engagement influences the probability of expansion or contraction.
-
-## Validation performed
-
-The generator checks IDs, foreign keys, event actors, nonnegative values, user creation times, workspace chronology, report creation/export order, seat limits, and invoice eligibility before writing any files. The test suite also checks weekday seasonality, plan/seat relationships, engagement-driven activity, and same-seed reproducibility.
+The generator encodes plan, company size, seat, engagement, billing, and
+product-usage relationships. Those rules deliberately create realistic-looking
+associations, so analytical and model results partly recover simulator design.
+No causal claims should be drawn. The risk ranking supports investigation; it
+must not automatically contact customers, change pricing, or make account
+decisions.

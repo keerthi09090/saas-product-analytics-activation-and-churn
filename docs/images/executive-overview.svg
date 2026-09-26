@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Executive overview and feature adoption</title>
+  <desc id="desc">Portfolio snapshot showing activation, conversion, monthly activity, and feature adoption for the deterministic synthetic dataset.</desc>
+  <rect width="1200" height="675" fill="#f8fafc"/>
+  <text x="55" y="60" font-family="Arial, sans-serif" font-size="30" font-weight="700" fill="#0f172a">SaaS Product Analytics</text>
+  <text x="55" y="91" font-family="Arial, sans-serif" font-size="16" fill="#64748b">Executive Overview · deterministic seed-42 dataset</text>
+  <g font-family="Arial, sans-serif">
+    <g transform="translate(55 125)"><rect width="340" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">Total Accounts</text><text x="22" y="78" font-size="36" font-weight="700" fill="#0f172a">100</text></g>
+    <g transform="translate(430 125)"><rect width="340" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">Activated Accounts</text><text x="22" y="78" font-size="36" font-weight="700" fill="#0f172a">50</text></g>
+    <g transform="translate(805 125)"><rect width="340" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">Activation Rate</text><text x="22" y="78" font-size="36" font-weight="700" fill="#2563eb">50%</text></g>
+    <g transform="translate(55 250)"><rect width="340" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">Median Time to Activation</text><text x="22" y="78" font-size="34" font-weight="700" fill="#0f172a">5 days</text></g>
+    <g transform="translate(430 250)"><rect width="340" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">Trial Conversion Rate</text><text x="22" y="78" font-size="36" font-weight="700" fill="#0f766e">56%</text></g>
+    <g transform="translate(805 250)"><rect width="340" height="105" rx="12" fill="#fff" stroke="#e2e8f0"/><text x="22" y="34" font-size="15" fill="#64748b">December Active Accounts</text><text x="22" y="78" font-size="36" font-weight="700" fill="#0f172a">66</text></g>
+    <text x="55" y="410" font-size="22" font-weight="700" fill="#0f172a">Feature Adoption</text>
+    <g font-size="15" fill="#334155">
+      <text x="55" y="459">dashboard_viewed</text><rect x="245" y="442" width="747" height="22" rx="5" fill="#dbeafe"/><rect x="245" y="442" width="620" height="22" rx="5" fill="#2563eb"/><text x="1010" y="459" font-weight="700">83%</text>
+      <text x="55" y="501">invite_sent</text><rect x="245" y="484" width="747" height="22" rx="5" fill="#dbeafe"/><rect x="245" y="484" width="560" height="22" rx="5" fill="#2563eb"/><text x="1010" y="501" font-weight="700">75%</text>
+      <text x="55" y="543">report_created</text><rect x="245" y="526" width="747" height="22" rx="5" fill="#dbeafe"/><rect x="245" y="526" width="463" height="22" rx="5" fill="#2563eb"/><text x="1010" y="543" font-weight="700">62%</text>
+      <text x="55" y="585">integration_connected</text><rect x="245" y="568" width="747" height="22" rx="5" fill="#dbeafe"/><rect x="245" y="568" width="374" height="22" rx="5" fill="#2563eb"/><text x="1010" y="585" font-weight="700">50%</text>
+      <text x="55" y="627">report_exported</text><rect x="245" y="610" width="747" height="22" rx="5" fill="#dbeafe"/><rect x="245" y="610" width="254" height="22" rx="5" fill="#2563eb"/><text x="1010" y="627" font-weight="700">34%</text>
+    </g>
+  </g>
+</svg>

@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">Streaming, orchestration, and observability</title>
+  <desc id="desc">Portfolio snapshot of the Kafka event path, Airflow task sequence, and monitored platform signals.</desc>
+  <rect width="1200" height="675" fill="#f8fafc"/>
+  <g font-family="Arial, sans-serif">
+    <text x="55" y="60" font-size="30" font-weight="700" fill="#0f172a">Platform Operations</text>
+    <text x="55" y="91" font-size="16" fill="#64748b">Streaming · orchestration · observability</text>
+    <rect x="55" y="125" width="1090" height="130" rx="14" fill="#fff" stroke="#e2e8f0"/>
+    <text x="82" y="164" font-size="20" font-weight="700" fill="#0f172a">Kafka Event Path</text>
+    <g font-size="15" font-weight="700" fill="#0f172a" text-anchor="middle"><rect x="82" y="187" width="180" height="44" rx="9" fill="#dbeafe"/><text x="172" y="214">Producer</text><text x="297" y="214" fill="#64748b">→</text><rect x="332" y="187" width="180" height="44" rx="9" fill="#ede9fe"/><text x="422" y="214">product-events</text><text x="547" y="214" fill="#64748b">→</text><rect x="582" y="187" width="180" height="44" rx="9" fill="#dcfce7"/><text x="672" y="214">Validated Consumer</text><text x="797" y="214" fill="#64748b">→</text><rect x="832" y="187" width="250" height="44" rx="9" fill="#e0f2fe"/><text x="957" y="214">Streaming Parquet</text></g>
+    <rect x="55" y="280" width="1090" height="145" rx="14" fill="#fff" stroke="#e2e8f0"/>
+    <text x="82" y="320" font-size="20" font-weight="700" fill="#0f172a">Airflow Daily Pipeline</text>
+    <g font-size="13" font-weight="700" fill="#0f172a" text-anchor="middle"><rect x="82" y="348" width="145" height="48" rx="8" fill="#f1f5f9"/><text x="154" y="369">Account</text><text x="154" y="386">snapshot</text><text x="242" y="378" fill="#64748b">→</text><rect x="267" y="348" width="145" height="48" rx="8" fill="#f1f5f9"/><text x="339" y="369">Subscription</text><text x="339" y="386">snapshot</text><text x="427" y="378" fill="#64748b">→</text><rect x="452" y="348" width="145" height="48" rx="8" fill="#f1f5f9"/><text x="524" y="369">Invoice</text><text x="524" y="386">snapshot</text><text x="612" y="378" fill="#64748b">→</text><rect x="637" y="348" width="120" height="48" rx="8" fill="#dbeafe"/><text x="697" y="378">dbt run</text><text x="772" y="378" fill="#64748b">→</text><rect x="797" y="348" width="120" height="48" rx="8" fill="#dcfce7"/><text x="857" y="378">dbt test</text><text x="932" y="378" fill="#64748b">→</text><rect x="957" y="348" width="145" height="48" rx="8" fill="#fef3c7"/><text x="1029" y="369">Score</text><text x="1029" y="386">refresh</text></g>
+    <rect x="55" y="450" width="1090" height="165" rx="14" fill="#fff" stroke="#e2e8f0"/>
+    <text x="82" y="490" font-size="20" font-weight="700" fill="#0f172a">Prometheus &amp; OpenTelemetry Signals</text>
+    <g font-size="15"><circle cx="94" cy="530" r="7" fill="#22c55e"/><text x="112" y="536" fill="#334155">API requests, errors, p50/p95 latency, readiness</text><circle cx="600" cy="530" r="7" fill="#22c55e"/><text x="618" y="536" fill="#334155">Streaming received, rejected, duplicates, freshness</text><circle cx="94" cy="575" r="7" fill="#22c55e"/><text x="112" y="581" fill="#334155">dbt, DuckDB, and churn-score refresh timestamps</text><circle cx="600" cy="575" r="7" fill="#22c55e"/><text x="618" y="581" fill="#334155">Airflow DAG success, failure, and completion health</text></g>
+  </g>
+</svg>
