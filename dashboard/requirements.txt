@@ -1,2 +1,3 @@
-# Streamlit Community Cloud discovers dependencies beside dashboard/app.py.
+# Streamlit Community Cloud discovers this dependency file beside app.py.
+# Keep the actual minimal package list centralized for local demo installs.
 -r ../requirements-demo.txt
